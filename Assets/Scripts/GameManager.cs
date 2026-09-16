@@ -10,7 +10,7 @@ public class GameManager : MonoBehaviour
     [SerializeField] private TMP_Text highScoreText;
 
     [Header("Game Timer")]
-    [SerializeField] private float gameDuration = 60f;
+    [SerializeField] private float gameDuration = 180f;
     [SerializeField] private TMP_Text gameTimerText;
 
     [Header("Game Over")]

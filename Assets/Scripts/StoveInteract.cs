@@ -55,7 +55,7 @@ public class StoveInteract : MonoBehaviour
         if(inventory==null){
             return;
         }
-        playerInsideTrigger = inventory;
+        playerInsideTrigger = inventory; //to remember player inside the stove trigger
         if(!inventory.HasItem()){
             TryPickUpFromStove(inventory);
             return;
@@ -74,7 +74,7 @@ public class StoveInteract : MonoBehaviour
             return;
         }
 
-        playerInsideTrigger = null;
+        playerInsideTrigger = null;//player exited the trigger
     }
 
     private IEnumerator CookMeat(ChefInventory chefInventory){
