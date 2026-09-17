@@ -1,48 +1,46 @@
 using UnityEngine;
 using System.Collections; 
 using TMPro;
+using System.Linq;
 
+public class StoveSlot
+{
+    public Transform Point;
+    public TMP_Text CounterText;
+    public Vector3 LocalPos;
+    public Quaternion LocalRot;
+    public bool Occupied;
+    public bool Cooked;
+    public GameObject MeatObject;
+}
 public class StoveInteract : MonoBehaviour
-{   [Header("UI")]
-    [SerializeField] private TMP_Text Stove1CounterText;
-    [SerializeField] private TMP_Text Stove2CounterText;
-
-
-    [SerializeField] private  Transform StovePoint1;
-    [SerializeField] private Transform StovePoint2;
+{   
     [SerializeField] private Transform Parent;
 
+
+    [SerializeField] private Transform[] stovePoints;      
+    [SerializeField] private TMP_Text[] counterTexts;       
+
+    private StoveSlot[] slots;
     [SerializeField] private GameObject CookedMeatPrefab;
     [SerializeField] private float CookTime = 6f;
  
     private int activeCookingCount=0;
-    private bool Stove1Occupied = false;
-    private bool Stove2Occupied= false;
 
-    private Vector3 StoveOnePos;
-    private Quaternion StoveOneRotation;
-    private Vector3 StoveTwoPos;
-    private Quaternion StoveTwoRotation;
-
-    private GameObject meatOnStove1;
-    private GameObject meatOnStove2;
-
-    private bool Stove1Cooked = false;
-    private bool Stove2Cooked = false;
     private ChefInventory playerInsideTrigger;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
-    {   if(Stove1CounterText!=null){
-            Stove1CounterText.gameObject.SetActive(false);
+    {   slots = new StoveSlot[stovePoints.Length];
+        for(int i=0;i<stovePoints.Length;i++){
+            slots[i]=new StoveSlot{
+                Point=stovePoints[i],
+                CounterText = counterTexts[i],
+                LocalPos = stovePoints[i].localPosition,
+                LocalRot=  stovePoints[i].localRotation
+            };
+            slots[i].CounterText?.gameObject.SetActive(false);
         }
-        if(Stove2CounterText!=null){
-            Stove2CounterText.gameObject.SetActive(false);
-        }
-        StoveOnePos=StovePoint1.transform.localPosition;
-        StoveOneRotation = StovePoint1.transform.localRotation;
-        StoveTwoPos=StovePoint2.transform.localPosition;
-        StoveTwoRotation = StovePoint2.transform.localRotation;
     }
 
     // Update is called once per frame
@@ -78,77 +76,40 @@ public class StoveInteract : MonoBehaviour
     }
 
     private IEnumerator CookMeat(ChefInventory chefInventory){
+        StoveSlot slot = slots.FirstOrDefault(s => !s.Occupied);
+        if(slot==null)yield break;
         activeCookingCount++;
-        int assignedSlot=0;
-        GameObject rawMeatInstance=chefInventory.GetHeldItem();
+        slot.Occupied=true;
+        slot.MeatObject = chefInventory.GetHeldItem();
+        chefInventory.PlaceItemAtPos(slot.LocalPos,slot.LocalRot,Parent);
         
-        if (!Stove1Occupied)
-        {
-            assignedSlot = 1;
-            Stove1Occupied = true;
-            meatOnStove1 = rawMeatInstance;
-            chefInventory.PlaceItemAtPos(StoveOnePos, StoveOneRotation, Parent);
-        }
-        else if (!Stove2Occupied)
-        {
-            assignedSlot =2;
-            Stove2Occupied=true;
-            meatOnStove2 = rawMeatInstance;
-            chefInventory.PlaceItemAtPos(StoveTwoPos,StoveTwoRotation,Parent);
-        }
 
         float timeRemaining= CookTime;
-        TMP_Text currentText = (assignedSlot==1)?Stove1CounterText:Stove2CounterText;
-        currentText.gameObject.SetActive(true);
+        slot.CounterText?.gameObject.SetActive(true);
         while(timeRemaining>0){
-            if(currentText!=null){
-                currentText.text = timeRemaining.ToString("F1")+"s";
+            if(slot.CounterText!=null){
+                slot.CounterText.text = timeRemaining.ToString("F1")+"s";
             }
             timeRemaining -=Time.deltaTime;
             yield return null;
         }
-        if(currentText!=null)currentText.gameObject.SetActive(false);
-        Transform activeSlotTransform = (assignedSlot==1)? StovePoint1:StovePoint2;
-        if(assignedSlot==1){
-            Destroy(meatOnStove1);
-        }
-        else{
-            Destroy(meatOnStove2);
-        }
-        GameObject CookedMeatInstance = Instantiate(
-            CookedMeatPrefab,
-            activeSlotTransform.position,
-            activeSlotTransform.rotation,
-            Parent
-        );
-        if(assignedSlot==1){
-            meatOnStove1  = CookedMeatInstance;
-            Stove1Cooked=true;
-        }
-        else{
-            meatOnStove2 = CookedMeatInstance;
-            Stove2Cooked=true;
-        }
+        slot.CounterText?.gameObject.SetActive(false);
+        Destroy(slot.MeatObject);
+
+        slot.MeatObject = Instantiate(CookedMeatPrefab, slot.Point.position, slot.Point.rotation, Parent);
+        slot.Cooked = true;
         if(playerInsideTrigger!=null && !playerInsideTrigger.HasItem()){
             TryPickUpFromStove(playerInsideTrigger);
         }
     }
     private void TryPickUpFromStove(ChefInventory inventory){
-        if(Stove1Occupied && meatOnStove1 !=null && Stove1Cooked){
-            inventory.PickUpExistingItem(meatOnStove1);
-            meatOnStove1=null;
-            Stove1Occupied = false;
-            activeCookingCount--;
-            
+        StoveSlot slot = slots.FirstOrDefault(s => s.Occupied && s.MeatObject != null && s.Cooked);
+        if (slot == null) return;
 
-        }
-         else if (Stove2Occupied && meatOnStove2 != null && Stove2Cooked)
-        {
-            inventory.PickUpExistingItem(meatOnStove2);
-            meatOnStove2 = null;
-            Stove2Occupied = false;
-            activeCookingCount--;
-            
-        }
+        inventory.PickUpExistingItem(slot.MeatObject);
+        slot.MeatObject = null;
+        slot.Occupied = false;
+        slot.Cooked = false;
+        activeCookingCount--;
     }
 }

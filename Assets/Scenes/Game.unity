@@ -1443,7 +1443,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -159, y: -84}
+  m_AnchoredPosition: {x: -159, y: -57.1}
   m_SizeDelta: {x: 200, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1001 &220505300
@@ -7880,11 +7880,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0afe351bb3652084092b6cfa139d6eac, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::StoveInteract
-  Stove1CounterText: {fileID: 955798744}
-  Stove2CounterText: {fileID: 1584852620}
-  StovePoint1: {fileID: 1336588841}
-  StovePoint2: {fileID: 1758186841}
   Parent: {fileID: 1207948244}
+  stovePoints:
+  - {fileID: 1336588841}
+  - {fileID: 1758186841}
+  counterTexts:
+  - {fileID: 955798744}
+  - {fileID: 1584852620}
   CookedMeatPrefab: {fileID: 8885558533925357698, guid: 773ce7a50a1a5fb49b32968e64c1630c, type: 3}
   CookTime: 6
 --- !u!65 &898501106
@@ -10349,8 +10351,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 358.85278, y: 151.6579}
-  m_SizeDelta: {x: 283.8538, y: 57.3029}
+  m_AnchoredPosition: {x: 340.6991, y: 189.6}
+  m_SizeDelta: {x: 320.1611, y: 57.3029}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1001 &1188375803
 PrefabInstance:
@@ -11390,7 +11392,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::GameManager
   scoreText: {fileID: 204584329}
   highScoreText: {fileID: 1185346009}
-  gameDuration: 60
+  gameDuration: 180
   gameTimerText: {fileID: 1268034476}
   gameOverPanel: {fileID: 61701150}
   finalScoreText: {fileID: 175712992}
