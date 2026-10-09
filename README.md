@@ -466,6 +466,12 @@ The repository contains the important Unity source directories:
 Unity-generated directories such as `Library`, `Temp`, `Logs`, and `UserSettings` are excluded from source control using `.gitignore`.
 
 ---
+<img width="1019" height="571" alt="image" src="https://github.com/user-attachments/assets/a4199d0c-4ce1-477c-b995-d510de1f8c77" />
+<img width="1011" height="559" alt="image" src="https://github.com/user-attachments/assets/db1cf3e9-2dec-43ff-b6a6-1236044d73ce" />
+<img width="1014" height="575" alt="image" src="https://github.com/user-attachments/assets/3d6b6d6a-65ce-411c-bf0d-4abf84138e0d" />
+<img width="1016" height="569" alt="image" src="https://github.com/user-attachments/assets/fb2f8055-91ea-4886-9100-3bd9f54e7d40" />
+
+
 
 ## 👨‍💻 Developer
 
