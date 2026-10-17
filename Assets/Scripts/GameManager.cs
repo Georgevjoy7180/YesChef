@@ -1,6 +1,8 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using TMPro;
+using System.Collections;
+using System.Collections.Generic;
 
 public class GameManager : MonoBehaviour
 {   
@@ -12,6 +14,16 @@ public class GameManager : MonoBehaviour
     [Header("Game Timer")]
     [SerializeField] private float gameDuration = 180f;
     [SerializeField] private TMP_Text gameTimerText;
+
+    [Header("Streak")]
+    [SerializeField] private TMP_Text streakText;
+
+    [Header("Order Spawner Settings")]
+    [SerializeField] private float minSpawnInterval = 8f;
+    [SerializeField] private float maxSpawnInterval = 15f;
+    [SerializeField] private int maxConcurrentOrders = 3;
+    [SerializeField] private float initialMinDelay = 3f;
+    [SerializeField] private float initialMaxDelay = 5f;
 
     [Header("Game Over")]
     [SerializeField] private GameObject gameOverPanel;
@@ -33,6 +45,9 @@ public class GameManager : MonoBehaviour
     private bool gameActive;
     private int currentScore;
     private int highScore;
+    private int currentStreak = 0;
+    private Coroutine orderSpawnerCoroutine;
+
     private void Awake(){
         if(Instance!=null && Instance!= this){
             Destroy(gameObject);
@@ -45,6 +60,7 @@ public class GameManager : MonoBehaviour
     private void Start()
     {  
         currentScore = 0;
+        currentStreak = 0;
 
         timeRemaining = gameDuration;
 
@@ -60,9 +76,14 @@ public class GameManager : MonoBehaviour
         scoreText.gameObject.SetActive(false);
         highScoreText.gameObject.SetActive(false);
         gameTimerText.gameObject.SetActive(false);
+        if (streakText != null)
+        {
+            streakText.gameObject.SetActive(false);
+        }
 
         UpdateScoreUI();
         UpdateTimerUI();
+        UpdateStreakUI();
 
         chefMove.enabled = false;
     }
@@ -84,13 +105,19 @@ public class GameManager : MonoBehaviour
         scoreText.gameObject.SetActive(true);
         highScoreText.gameObject.SetActive(true);
         gameTimerText.gameObject.SetActive(true);
-
-        foreach (CustomerWindow window in customerWindows)
+        if (streakText != null)
         {
-            window.StartFirstOrder();
+            streakText.gameObject.SetActive(true);
         }
 
+        if (orderSpawnerCoroutine != null)
+        {
+            StopCoroutine(orderSpawnerCoroutine);
+        }
+        orderSpawnerCoroutine = StartCoroutine(OrderSpawnerRoutine());
+
         UpdateTimerUI();
+        UpdateStreakUI();
     }
     public void AddScore(int amount){
         if(!gameActive){
@@ -106,6 +133,27 @@ public class GameManager : MonoBehaviour
             PlayerPrefs.Save();
         }
         UpdateScoreUI();
+    }
+    public void IncrementStreak()
+    {
+        currentStreak++;
+        UpdateStreakUI();
+    }
+    public void ResetStreak()
+    {
+        currentStreak = 0;
+        UpdateStreakUI();
+    }
+    public int GetStreak()
+    {
+        return currentStreak;
+    }
+    private void UpdateStreakUI()
+    {
+        if (streakText != null)
+        {
+            streakText.text = "Streak: " + currentStreak;
+        }
     }
     private void UpdateScoreUI()
     {
@@ -175,6 +223,12 @@ public class GameManager : MonoBehaviour
         pausePanel.SetActive(false);
         pauseButton.SetActive(false);
 
+        if (orderSpawnerCoroutine != null)
+        {
+            StopCoroutine(orderSpawnerCoroutine);
+            orderSpawnerCoroutine = null;
+        }
+
         gameOverPanel.SetActive(true);
 
         finalScoreText.text =
@@ -183,6 +237,52 @@ public class GameManager : MonoBehaviour
         finalHighScoreText.text =
         "High Score: " + highScore;
     }
+
+    private IEnumerator OrderSpawnerRoutine()
+    {
+        // Wait 3 to 5 seconds after game start before spawning the very first order
+        float initialWait = Random.Range(initialMinDelay, initialMaxDelay);
+        yield return new WaitForSeconds(initialWait);
+
+        while (gameActive)
+        {
+            TrySpawnRandomOrder();
+
+            float waitTime = Random.Range(minSpawnInterval, maxSpawnInterval);
+            yield return new WaitForSeconds(waitTime);
+        }
+    }
+
+    private void TrySpawnRandomOrder()
+    {
+        if (!gameActive || customerWindows == null || customerWindows.Length == 0)
+            return;
+
+        List<CustomerWindow> availableWindows = new List<CustomerWindow>();
+        int activeOrderCount = 0;
+
+        foreach (CustomerWindow window in customerWindows)
+        {
+            if (window == null) continue;
+
+            if (window.IsOrderActive)
+            {
+                activeOrderCount++;
+            }
+            else
+            {
+                availableWindows.Add(window);
+            }
+        }
+
+        // Only spawn if active orders are below the maximum limit and an empty window is available
+        if (activeOrderCount < maxConcurrentOrders && availableWindows.Count > 0)
+        {
+            CustomerWindow chosenWindow = availableWindows[Random.Range(0, availableWindows.Count)];
+            chosenWindow.SpawnOrder();
+        }
+    }
+
     public bool IsGameActive()
     {
         return gameActive;

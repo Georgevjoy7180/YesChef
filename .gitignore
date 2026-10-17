@@ -11,9 +11,9 @@
 [Mm]emoryCaptures/
 [Rr]ecordings/
 
-# Build output
-[Bb]uild/
-[Bb]uilds/
+# Allow WebGL build folder
+!Build/
+Data/
 
 # Asset Store Tools
 [Aa]ssets/AssetStoreTools*

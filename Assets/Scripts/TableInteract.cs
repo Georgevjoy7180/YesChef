@@ -23,7 +23,6 @@ public class TableInteract : MonoBehaviour
         if(CurrentKnife!=null){
             originalLocalPos = CurrentKnife.transform.localPosition;
             originalLocalRotation = CurrentKnife.transform.localRotation;
-            Debug.Log($"Knife Original Pos: {originalLocalPos} | Rotation: {originalLocalRotation}");
         }
     }
     private void OnTriggerEnter(Collider other)
@@ -40,12 +39,9 @@ public class TableInteract : MonoBehaviour
             return;
         }
         Ingredient Ingredient = inventory.GetHeldIngredient();
-        Debug.Log("Is Inventory Null? " + (inventory == null));
-        Debug.Log("Is Ingredient Null? " + (Ingredient == null));
         if(Ingredient==null){
             return;
         }
-        Debug.Log("Type is "+ Ingredient.ingredientType);
         if(Ingredient.ingredientType != IngredientType.Vegetable){
             return;
         }

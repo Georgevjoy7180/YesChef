@@ -10,7 +10,6 @@ public class TrashInteract : MonoBehaviour
 
     void OnTriggerEnter(Collider other){
         ChefInventory inventory = other.GetComponent<ChefInventory>();
-        Debug.Log(inventory==null);
         if(inventory==null)return;
         inventory.RemoveHeldItem();
     }
